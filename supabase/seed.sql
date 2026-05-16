@@ -1,0 +1,2 @@
+-- Seed data loaded by `supabase db reset` in local development only.
+-- Real seed data lives here once T9 lands.
