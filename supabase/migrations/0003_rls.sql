@@ -93,3 +93,14 @@ create policy "events updatable by owning manager"
 create policy "events deletable by owning manager"
   on events for delete
   using (owns_artist(artist_id));
+
+-- Helpers are called by the RLS engine, not by clients. Supabase grants
+-- EXECUTE to anon/authenticated/service_role on every public function by
+-- default; we revoke the first two so they cannot be called as RPC over
+-- PostgREST (which would leak "is X my artist?" probes across the UUID
+-- space). service_role keeps EXECUTE for server-side admin use.
+-- Policies keep working — RLS evaluates expressions as the function owner
+-- (postgres), not as the calling role.
+revoke execute on function is_manager()       from public, anon, authenticated;
+revoke execute on function owns_artist(uuid)  from public, anon, authenticated;
+revoke execute on function is_my_artist(uuid) from public, anon, authenticated;

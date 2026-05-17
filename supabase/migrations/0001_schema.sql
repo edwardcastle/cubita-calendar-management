@@ -55,6 +55,9 @@ create index events_artist_date_idx on events(artist_id, event_date);
 create index events_date_idx        on events(event_date);
 create index events_status_idx      on events(status);
 
+-- RLS policies on artists/profiles/events use manager_id heavily.
+create index artists_manager_id_idx on artists(manager_id);
+
 -- updated_at trigger
 create or replace function set_updated_at()
 returns trigger language plpgsql as $$
