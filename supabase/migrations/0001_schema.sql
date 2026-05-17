@@ -5,7 +5,9 @@ create type event_status as enum ('possible', 'hold', 'confirmed', 'cancelled');
 -- profiles: extends auth.users
 create table profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
-  role        user_role not null default 'artist',
+  -- Default 'manager' matches handle_new_user(): a direct insert without
+  -- explicit role should land in the same default lane as a normal signup.
+  role        user_role not null default 'manager',
   full_name   text,
   created_at  timestamptz not null default now()
 );
