@@ -34,13 +34,17 @@ create table events (
   city             text,
   venue_name       text not null,
   festival_name    text,
-  fee_amount       numeric(12,2),
+  -- Precision: numeric(15,4) so 3-decimal currencies (KWD, BHD, JOD)
+  -- and 0-decimal currencies (JPY, KRW) don't get silently truncated.
+  fee_amount       numeric(15,4),
   fee_currency     char(3),
   promoter_name    text,
   promoter_email   text,
   promoter_phone   text,
   notes            text,
-  created_by       uuid not null references profiles(id),
+  -- Audit metadata, not load-bearing. SET NULL on profile delete so
+  -- removing a manager account does not silently block via NO ACTION.
+  created_by       uuid references profiles(id) on delete set null,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
