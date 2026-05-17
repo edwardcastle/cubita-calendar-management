@@ -94,13 +94,13 @@ create policy "events deletable by owning manager"
   on events for delete
   using (owns_artist(artist_id));
 
--- Helpers are called by the RLS engine, not by clients. Supabase grants
--- EXECUTE to anon/authenticated/service_role on every public function by
--- default; we revoke the first two so they cannot be called as RPC over
--- PostgREST (which would leak "is X my artist?" probes across the UUID
--- space). service_role keeps EXECUTE for server-side admin use.
--- Policies keep working — RLS evaluates expressions as the function owner
--- (postgres), not as the calling role.
-revoke execute on function is_manager()       from public, anon, authenticated;
-revoke execute on function owns_artist(uuid)  from public, anon, authenticated;
-revoke execute on function is_my_artist(uuid) from public, anon, authenticated;
+-- NOTE: do NOT revoke EXECUTE on these helpers from `authenticated`.
+-- SECURITY DEFINER only changes which role the function BODY runs as; the
+-- caller still needs EXECUTE permission to invoke it. Revoking from
+-- `authenticated` makes Postgres crash when an RLS policy evaluates
+-- `owns_artist(...)` for an authenticated user — breaking RLS entirely.
+-- The RPC-leak concern from the T7 review is acknowledged but accepted:
+-- the helpers only leak a single true/false bit per probe, and the
+-- alternative (moving them to a private, non-exposed schema) requires
+-- more rework than the v1 threat model justifies. Re-evaluate before
+-- public production launch.
