@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Edit, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
